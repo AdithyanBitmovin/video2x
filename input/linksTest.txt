@@ -1,0 +1,5 @@
+https://storage.googleapis.com/adi-hardware-testing/fubo/segments/TS_SEGMENTS/FUBO_MOVIESTAR_20200702-02.00.13/FUBO_MOVIESTAR_20200702-02.00.13_0000.mkv
+https://storage.googleapis.com/adi-hardware-testing/fubo/segments/TS_SEGMENTS/FUBO_MOVIESTAR_20200702-02.00.13/FUBO_MOVIESTAR_20200702-02.00.13_0001.mkv
+https://storage.googleapis.com/adi-hardware-testing/fubo/segments/TS_SEGMENTS/FUBO_MOVIESTAR_20200702-02.00.13/FUBO_MOVIESTAR_20200702-02.00.13_0002.mkv
+https://storage.googleapis.com/adi-hardware-testing/fubo/segments/TS_SEGMENTS/FUBO_MOVIESTAR_20200702-02.00.13/FUBO_MOVIESTAR_20200702-02.00.13_0003.mkv
+https://storage.googleapis.com/adi-hardware-testing/fubo/segments/TS_SEGMENTS/FUBO_MOVIESTAR_20200702-02.00.13/FUBO_MOVIESTAR_20200702-02.00.13_0004.mkv
