@@ -25,10 +25,9 @@ class Encoder(object):
 
 
 class Rendition(object):
-    def __init__(self, width, height, bitrate):
-        self.width = width
-        self.height = height
-        self.bitrateInMbits = bitrate
+    def __init__(self, scaling_size, crf):
+        self.scaling_size = scaling_size
+        self.crf = crf
 
 
 class Decoder(object):
@@ -82,7 +81,7 @@ def createIODirectories(directories):
 
 def downloadVideos(filename):
     links = [
-        "https://storage.googleapis.com/adi-hardware-testing/input/jellyfish-120-mbps-4k-uhd-hevc.mkv"
+        "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/NARUTO/chunk_30s/video_00005.mkv"
     ]
 
     if (filename is not None):
@@ -129,21 +128,15 @@ def checkIfVideosExist(links):
 
 # Run the tests for all given encoders, passes, bitrates and presets
 def runTests(videos):
-    if (testType == "software_x264"):
-        logging.info("Evaluating X264 - Software Encoder")
-        testCase = getTestCase_x264()
-    elif (testType == "hardware_h264nvenc"):
+    if (testType == "bicubic"):
+        logging.info("Evaluating X264 - Bicubic scaling")
+        testCase = getTestCase_bicubic()
+    elif (testType == "superresolution"):
         logging.info("Evaluating H264-NVENC - Nvidia Hardware Encoder")
-        testCase = getTestCase_h264nvenc()
-    elif (testType == "software_x265"):
-        logging.info("Evaluating X265 - Software Encoder")
-        testCase = getTestCase_x265()
-    elif (testType == "hardware_hevcnvenc"):
-        logging.info("Evaluating H265-NVENC - Nvidia Hardware Encoder")
-        testCase = getTestCase_hevcnvenc()
+        testCase = getTestCase_superresolution()
     else:
         logging.info("Evaluating X264 - Software Encoder")
-        testCase = getTestCase_x265()
+        testCase = getTestCase_superresolution()
 
     evalTestData(videos, testCase)
 
@@ -154,7 +147,7 @@ def writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput):
         rcLookahead = "_rc"
 
     outputFilePath = "{0}/{1}_{2}_{3}{4}.json".format(OUTPUT_RESULTS, dateTimeForFileOutput,
-                                                       encoder.encoderString, encoder.preset, rcLookahead)
+                                                      encoder.encoderString, encoder.preset, rcLookahead)
 
     resultsFile = open(outputFilePath, "w")
     resultsFile.write(jsonPrettyString)
@@ -169,28 +162,21 @@ def prettifyJsonString(results):
     return jsonPrettyString
 
 
-def getTestCase_x264():
+def getTestCase_bicubic():
     # Initialize encoders
     encoders = []
     x264codecOptionsString = r"""{
-        "aud" : "1",
-        "bf" : "3",
-        "coder" : "1",
-        "direct-pred" : "spatial",
-        "me_range" : "16",
-        "profile" : "high",
-        "refs" : "3",
-        "x264-params" : "b-adapt=1:me=hex:rc-lookahead=40:subme=7:trellis=1:nal-hrd=none:b-pyramid=normal:partitions=i4x4,i8x8,p8x8,b8x8:open-gop=0:stitchable=1:force-cfr=1:aud=1"
+        "crf" : "17",
+        "pix_fmt" : "yuv420p",
+        "tune" : "animation", 
+        "sws_flags" : "bicubic"
     }"""
     x264codecOptions = json.loads(x264codecOptionsString)
     encoders.append(Encoder("libx264", "slow", x264codecOptions))
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(640, 360, 0.5))
-    renditions.append(Rendition(640, 360, 0.7))
-    renditions.append(Rendition(960, 360, 1.0))
-    renditions.append(Rendition(1280, 720, 4.7))
+    renditions.append(Rendition(2, 17))
 
     # Intialize decoder
     decoder = Decoder("h264", {})
@@ -198,39 +184,8 @@ def getTestCase_x264():
     testCase = TestCase(decoder, encoders, renditions, "scale")
     return testCase
 
-def getTestCase_x265():
-    # Initialize encoders
-    encoders = []
-    x265codecOptionsString = r"""{
-       "x265-params" : "log-level=error"
-    }"""
-    codecOptions = json.loads(x265codecOptionsString)
-    encoders.append(Encoder("libx265", "medium", codecOptions))
-    # encoders.append(Encoder("libx265", "fast", codecOptions))
-    # encoders.append(Encoder("libx265", "faster", codecOptions))
-    # encoders.append(Encoder("libx265", "veryfast", codecOptions))
-    # encoders.append(Encoder("libx265", "superfast", codecOptions))
-    # encoders.append(Encoder("libx265", "ultrafast", codecOptions))
 
-    # Intialize renditions
-    renditions = []
-    renditions.append(Rendition(3840, 2160, 15.0))
-    renditions.append(Rendition(3840, 2160, 12.0))
-    renditions.append(Rendition(2560, 1440, 8.0))
-    renditions.append(Rendition(2560, 1440, 6.0))
-    renditions.append(Rendition(1920, 1080, 4.0))
-    renditions.append(Rendition(1280, 720, 2.0))
-    renditions.append(Rendition(1280, 720, 1.0))
-    renditions.append(Rendition(960, 540, 0.6))
-
-    # Intialize decoder
-    decoder = Decoder("hevc", {})
-
-    testCase = TestCase(decoder, encoders, renditions, "scale")
-    return testCase
-
-
-def getTestCase_h264nvenc():
+def getTestCase_superresolution():
     # Initialize encoders
     encoders = []
     codecOptionsString = r"""{
@@ -238,16 +193,11 @@ def getTestCase_h264nvenc():
         "rc-lookahead" : "40"
     }"""
     codecOptions = json.loads(codecOptionsString)
-    encoders.append(Encoder("h264_nvenc", "p5", {}))
-    encoders.append(Encoder("h264_nvenc", "p6", {}))
-    encoders.append(Encoder("h264_nvenc", "p7", {}))
+    encoders.append(Encoder("h264", "default", {}))
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(640, 360, 0.5))
-    renditions.append(Rendition(640, 360, 0.7))
-    renditions.append(Rendition(960, 360, 1.0))
-    renditions.append(Rendition(1280, 720, 4.7))
+    renditions.append(Rendition(2, 17))
 
     # Intialize decoder
     h264CuvidOptionsString = r"""{
@@ -257,45 +207,7 @@ def getTestCase_h264nvenc():
     h264CuvidOptions = json.loads(h264CuvidOptionsString)
     decoder = Decoder("h264_cuvid", h264CuvidOptions)
 
-    testCase = TestCase(decoder, encoders, renditions, "scale_npp")
-    return testCase
-
-
-def getTestCase_hevcnvenc():
-    # Initialize encoders
-    encoders = []
-    codecOptionsString = r"""{
-        "tune" : "hq"
-    }"""
-    codecOptions = json.loads(codecOptionsString)
-    encoders.append(Encoder("hevc_nvenc", "p7", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p6", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p5", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p4", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p3", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p2", {}))
-    # encoders.append(Encoder("hevc_nvenc", "p1", {}))
-
-    # Intialize renditions
-    renditions = []
-    renditions.append(Rendition(3840, 2160, 15.0))
-    renditions.append(Rendition(3840, 2160, 12.0))
-    renditions.append(Rendition(2560, 1440, 8.0))
-    renditions.append(Rendition(2560, 1440, 6.0))
-    renditions.append(Rendition(1920, 1080, 4.0))
-    renditions.append(Rendition(1280, 720, 2.0))
-    renditions.append(Rendition(1280, 720, 1.0))
-    renditions.append(Rendition(960, 540, 0.6))
-
-    # Intialize decoder
-    h264CuvidOptionsString = r"""{
-        "vsync" : "0",
-        "hwaccel" : "cuvid"
-    }"""
-    h264CuvidOptions = json.loads(h264CuvidOptionsString)
-    decoder = Decoder("hevc_cuvid", h264CuvidOptions)
-
-    testCase = TestCase(decoder, encoders, renditions, "scale_npp")
+    testCase = TestCase(decoder, encoders, renditions, "waifu2x_caffe")
     return testCase
 
 
@@ -308,10 +220,17 @@ def evalTestData(videos, testCase):
                 "Running tests for: |\t " + video + " \t|\t Decoder: " + testCase.decoder.decoderString +
                 " \t|\t Encoder: " + encoder.encoderString + " \t|\t Preset: " + encoder.preset + " \t|")
 
-            encodeCommand = getEncodeCommand(video, testCase.decoder, encoder, testCase.renditions, testCase.scaler)
-            print(encodeCommand)
+            testCaseCommand = ""
+            if testCase.scaler == "scale":
+                testCaseCommand = getFfmpegEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
+                                                       testCase.scaler)
+            else:
+                testCaseCommand = getVideo2xEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
+                                       testCase.scaler)
 
-            timeOfCommand = getTimeOfCommand(encodeCommand)
+
+
+            timeOfCommand = getTimeOfCommand(testCaseCommand)
             processMonitorResult = executeTimeCommand(timeOfCommand)
             bitrateList, psnrList, vmafList = extractBdMetrics(encoder, testCase, video)
 
@@ -327,7 +246,7 @@ def evalTestData(videos, testCase):
                     "realTimeFactor": processMonitorResult.realTimeFactor,
                     "bitrateOutput": bitrateList,
                     "psnr": psnrList,
-                    "vmaf" : vmafList
+                    "vmaf": vmafList
                 }
             )
 
@@ -345,7 +264,10 @@ def extractBdMetrics(encoder, testCase, video):
         "{0}/{1}".format(OUTPUT_RESULTS, outputPath)
 
         sourceInputPath = getInputPath(video)
-        bitrateOutput, psnr, vmaf = getBitrateOfVideo(sourceInputPath, outputPath)
+        # bitrateOutput, psnr, vmaf = getBitrateOfVideo(sourceInputPath, outputPath)
+        bitrateOutput = 0
+        psnr = 0
+        vmaf = 0
         bitrateOutputList.append(bitrateOutput)
         psnrOutputList.append(psnr)
         vmafOutputList.append(vmaf)
@@ -360,22 +282,36 @@ def extractBdMetrics(encoder, testCase, video):
     return bitrateFormatted, psnrFormatted, vmafFormatted
 
 
+def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
+    video2xpath = "/video/src/video2x.py"
+    inputPath = getInputPath(video)
+    rendition = renditionList[0]
+    outputPath = getOutputFilePath(rendition, video, encoder)
+
+    video2xCommand = "python3.8 {0} -i {1} -o {2} -d {3} -r {4}".format(video2xpath, inputPath, outputPath, scaler,
+                                                                        rendition.scaling_size)
+    print(video2xCommand)
+    return video2xCommand
+
+
 # Returns the command to encode with the given parameters as a string.
 # video - filename
 # encoder - x264 / x265
 # bitrate in Mbit/s
 # preset - slow / fast
-def getEncodeCommand(video, decoder, encoder, renditionList, scaler):
+def getFfmpegEncodeCommand(video, decoder, encoder, renditionList, scaler):
     ffmpegPath = "ffmpeg -hide_banner -loglevel quiet -stats"
     inputPath = getInputPath(video)
 
     decodingOption = "{0} -c:v {1}".format(getOptionsFfmpegString(decoder.decoderOptions), decoder.decoderString)
+    decodingOption = ""
 
     outputRenditionsCommand = ""
     for rendition in renditionList:
         outputRenditionsCommand += getRenditionFfmpegSubCommand(encoder, video, rendition, scaler)
 
     ffmpegCommand = '{0}  -y {1} -i {2} {3}'.format(ffmpegPath, decodingOption, inputPath, outputRenditionsCommand)
+    print(ffmpegCommand)
     return ffmpegCommand
 
 
@@ -389,14 +325,14 @@ def getRenditionFfmpegSubCommand(encoder, video, rendition, scaler):
     # outputPath = "-f null /dev/null"
 
     encoderOptions = getOptionsFfmpegString(encoder.encoderOptions)
-    outputRenditions = ' -vf {7}={0}:{1} -c:v {2} -preset {3} {6} -b:v {4}M -an {5}'.format(rendition.width,
-                                                                                            rendition.height,
-                                                                                            encoder.encoderString,
-                                                                                            encoder.preset,
-                                                                                            rendition.bitrateInMbits,
-                                                                                            outputPath,
-                                                                                            encoderOptions,
-                                                                                            scaler)
+    outputRenditions = ' -vf {7}=iw*{0}:ih*{1} -c:v {2} -preset {3} {6} -crf {4} -an {5}'.format(rendition.scaling_size,
+                                                                                                 rendition.scaling_size,
+                                                                                                 encoder.encoderString,
+                                                                                                 encoder.preset,
+                                                                                                 rendition.crf,
+                                                                                                 outputPath,
+                                                                                                 encoderOptions,
+                                                                                                 scaler)
 
     return outputRenditions
 
@@ -410,9 +346,8 @@ def getOptionsFfmpegString(options):
 
 def getOutputFilePath(rendition, video, encoder):
     muxingFormat = "mkv"
-    outputFileName = "{0}_{1}_{2}_{3}Mbps_{5}_{6}.{4}".format(os.path.splitext(ntpath.basename(video))[0],
-                                                              rendition.height, rendition.width,
-                                                              rendition.bitrateInMbits,
+    outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
+                                                              rendition.scaling_size, rendition.crf,
                                                               muxingFormat, encoder.encoderString, encoder.preset)
     outputPath = "{0}/{1}".format(OUTPUT_SEGMENTS, outputFileName)
     return outputPath
@@ -452,13 +387,13 @@ def getRealTimeFactor(realTimeFactorString):
 
 # Get the bitrate of a video in Mbit/s and the psnr ( quality metric )
 def getBitrateOfVideo(reference, distorted):
-    ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
-    #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0}".format(reference, distorted)
-    err, out = runCommand(ffmpegQualityMetricCommand)
-    resp = json.loads(out)
-
-    psnrAverage = (resp["global"]["psnr"]["average"])
-    vmafAverage = (resp["global"]["vmaf"]["average"])
+    # ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
+    # #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0}".format(reference, distorted)
+    # err, out = runCommand(ffmpegQualityMetricCommand)
+    # resp = json.loads(out)
+    #
+    # psnrAverage = (resp["global"]["psnr"]["average"])
+    # vmafAverage = (resp["global"]["vmaf"]["average"])
 
     ffprobeCommand = "ffprobe -hide_banner -loglevel quiet  -show_entries format=duration,bit_rate -of json {0}".format(
         distorted)
@@ -466,7 +401,7 @@ def getBitrateOfVideo(reference, distorted):
     resp = json.loads(out)
     bitrateInBps = resp["format"]["bit_rate"]
     bitrateInMbps = int(bitrateInBps) / 1000000.0
-    return bitrateInMbps, psnrAverage, vmafAverage
+    return bitrateInMbps, 0, 0
 
 
 def runCommand(ffmpegCommand):

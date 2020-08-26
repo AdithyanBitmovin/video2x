@@ -122,7 +122,6 @@ ffmpeg:
   # Step 1: Frame Extraction
   # extract all frames from original input into temporary directory
   extract_frames:
-    '-hwaccel': auto # automatically select hardware acceleration method
     '-y': true
     input_options: {} # empty dict, expand if necessary
     output_options:
@@ -146,7 +145,6 @@ ffmpeg:
   # migrate audio and subtitle streams from original
   #   video into the upscaled video
   migrate_streams:
-    '-hwaccel': auto # automatically select hardware acceleration method
     '-y': true
     input_options: {} # empty dict, expand if necessary
     output_options:
