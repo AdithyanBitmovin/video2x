@@ -81,7 +81,7 @@ def createIODirectories(directories):
 
 def downloadVideos(filename):
     links = [
-        "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/NARUTO/chunk_30s/video_00005.mkv"
+        "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/NARUTO/chunk_30s/video_00007_2frames.mkv"
     ]
 
     if (filename is not None):
@@ -283,7 +283,7 @@ def extractBdMetrics(encoder, testCase, video):
 
 
 def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
-    video2xpath = "/video/src/video2x.py"
+    video2xpath = "./video2x/src/video2x.py"
     inputPath = getInputPath(video)
     rendition = renditionList[0]
     outputPath = getOutputFilePath(rendition, video, encoder)
@@ -362,6 +362,11 @@ def getTimeOfCommand(command):
 # Runs the /usr/bin/time command and returns the elapsed time in seconds, the cpu usage in % and the max and avg memory used in kb
 def executeTimeCommand(timeCommand):
     err, out = runCommand(timeCommand)
+
+
+    print(err)
+    print(out)
+
     err = err.split()
     data = err[-5:]
 
@@ -404,9 +409,13 @@ def getBitrateOfVideo(reference, distorted):
     return bitrateInMbps, 0, 0
 
 
-def runCommand(ffmpegCommand):
-    proc = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+def runCommand(command):
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
+
+    print(err)
+    print(out)
+
     err = err.decode("utf-8")
     out = out.decode("utf-8")
     return err, out
