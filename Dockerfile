@@ -63,6 +63,6 @@ ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 ENV INPUT=None
 ENV TEST_TYPE=software
 
-CMD ["RunTests.py"]
-ENTRYPOINT ["python3"]
+#CMD ["RunTests.py"]
+#ENTRYPOINT ["python3.8"]
 
