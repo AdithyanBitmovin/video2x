@@ -84,8 +84,9 @@ def downloadVideos(filename):
         "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/NARUTO/chunk_30s/video_00007_2frames.mkv"
     ]
 
-    if (filename is not None):
-        links = open("./" + filename, "r").read().split("\n")
+    print(filename)
+    # if (filename is not None):
+    #    links = open("./" + filename, "r").read().split("\n")
 
     videos, doFilesExist, filesToDownload, downloadSize = checkIfVideosExist(links)
     print("Files to download : " + str(filesToDownload))
@@ -136,7 +137,7 @@ def runTests(videos):
         testCase = getTestCase_superresolution()
     else:
         logging.info("Evaluating X264 - Software Encoder")
-        testCase = getTestCase_superresolution()
+        testCase = getTestCase_bicubic()
 
     evalTestData(videos, testCase)
 
@@ -223,12 +224,10 @@ def evalTestData(videos, testCase):
             testCaseCommand = ""
             if testCase.scaler == "scale":
                 testCaseCommand = getFfmpegEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
-                                                       testCase.scaler)
+                                                         testCase.scaler)
             else:
                 testCaseCommand = getVideo2xEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
-                                       testCase.scaler)
-
-
+                                                          testCase.scaler)
 
             timeOfCommand = getTimeOfCommand(testCaseCommand)
             processMonitorResult = executeTimeCommand(timeOfCommand)
@@ -251,6 +250,7 @@ def evalTestData(videos, testCase):
             )
 
         jsonPrettyString = prettifyJsonString(results)
+        print(jsonPrettyString)
         outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput)
         logging.info("Results written in {0}".format(outputFilePath))
 
@@ -325,14 +325,14 @@ def getRenditionFfmpegSubCommand(encoder, video, rendition, scaler):
     # outputPath = "-f null /dev/null"
 
     encoderOptions = getOptionsFfmpegString(encoder.encoderOptions)
-    outputRenditions = ' -vf {7}=iw*{0}:ih*{1} -c:v {2} -preset {3} {6} -crf {4} -an {5}'.format(rendition.scaling_size,
-                                                                                                 rendition.scaling_size,
-                                                                                                 encoder.encoderString,
-                                                                                                 encoder.preset,
-                                                                                                 rendition.crf,
-                                                                                                 outputPath,
-                                                                                                 encoderOptions,
-                                                                                                 scaler)
+    outputRenditions = ' -vf {7}=iw*{0}:ih*{1} -c:v {2} {6} -crf {4} -an {5}'.format(rendition.scaling_size,
+                                                                                     rendition.scaling_size,
+                                                                                     encoder.encoderString,
+                                                                                     encoder.preset,
+                                                                                     rendition.crf,
+                                                                                     outputPath,
+                                                                                     encoderOptions,
+                                                                                     scaler)
 
     return outputRenditions
 
@@ -347,8 +347,8 @@ def getOptionsFfmpegString(options):
 def getOutputFilePath(rendition, video, encoder):
     muxingFormat = "mkv"
     outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
-                                                              rendition.scaling_size, rendition.crf,
-                                                              muxingFormat, encoder.encoderString, encoder.preset)
+                                                                rendition.scaling_size, rendition.crf,
+                                                                muxingFormat, encoder.encoderString, encoder.preset)
     outputPath = "{0}/{1}".format(OUTPUT_SEGMENTS, outputFileName)
     return outputPath
 
@@ -363,18 +363,17 @@ def getTimeOfCommand(command):
 def executeTimeCommand(timeCommand):
     err, out = runCommand(timeCommand)
 
-
     print(err)
-    print(out)
+    # print(out)
 
     err = err.split()
-    data = err[-5:]
+    data = err[-4:]
 
-    realTimeFactor = getRealTimeFactor(data[0])
-    elapsedTimeInSeconds = float(data[1])
-    cpuUsageInPercent = int(data[2][:-1])
-    maxMemUsedInKb = int(data[3])
-    avgMemUsedInKb = int(data[4])
+    realTimeFactor = 0
+    elapsedTimeInSeconds = float(data[0])
+    cpuUsageInPercent = int(data[1][:-1])
+    maxMemUsedInKb = int(data[2])
+    avgMemUsedInKb = int(data[3])
     processMonitorResult = ProcessMonitorResult(elapsedTimeInSeconds, cpuUsageInPercent, maxMemUsedInKb, avgMemUsedInKb,
                                                 realTimeFactor)
 
@@ -414,10 +413,10 @@ def runCommand(command):
     (out, err) = proc.communicate()
 
     print(err)
-    print(out)
+    # print(out)
 
     err = err.decode("utf-8")
-    out = out.decode("utf-8")
+    # out = out.decode("utf-8")
     return err, out
 
 
