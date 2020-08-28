@@ -84,9 +84,8 @@ def downloadVideos(filename):
         "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/CONAN/chunk_4s_forced/video_00346.mkv"
     ]
 
-    print(filename)
-    # if (filename is not None):
-    #    links = open("./" + filename, "r").read().split("\n")
+    if (filename is not None):
+       links = open("./" + filename, "r").read().split("\n")
 
     videos, doFilesExist, filesToDownload, downloadSize = checkIfVideosExist(links)
     print("Files to download : " + str(filesToDownload))
@@ -130,25 +129,22 @@ def checkIfVideosExist(links):
 # Run the tests for all given encoders, passes, bitrates and presets
 def runTests(videos):
     if (testType == "bicubic"):
-        logging.info("Evaluating X264 - Bicubic scaling")
+        logging.info("Evaluating X264 - bicubic scaling")
         testCase = getTestCase_bicubic()
-    elif (testType == "superresolution"):
-        logging.info("Evaluating H264-NVENC - Nvidia Hardware Encoder")
-        testCase = getTestCase_superresolution()
-    else:
-        logging.info("Evaluating X264 - Software Encoder")
-        testCase = getTestCase_bicubic()
+    else :
+        logging.info("Evaluating X264 - " + testType + " scaling")
+        testCase = getTestCase_superresolution(testType)
+
+    createIODirectories([OUTPUT_SEGMENTS + "/" + testCase.scaler + "/" ])
+    createIODirectories([OUTPUT_RESULTS + "/" + testCase.scaler + "/" ])
 
     evalTestData(videos, testCase)
 
 
-def writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput):
-    rcLookahead = ""
-    if bool(encoder.encoderOptions):
-        rcLookahead = "_rc"
+def writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, scaler):
 
-    outputFilePath = "{0}/{1}_{2}_{3}{4}.json".format(OUTPUT_RESULTS, dateTimeForFileOutput,
-                                                      encoder.encoderString, encoder.preset, rcLookahead)
+    outputFilePath = "{0}/{1}/{2}_{3}_{4}_{1}.json".format(OUTPUT_RESULTS, scaler, dateTimeForFileOutput,
+                                                      encoder.encoderString, encoder.preset)
 
     resultsFile = open(outputFilePath, "w")
     resultsFile.write(jsonPrettyString)
@@ -175,7 +171,7 @@ def getTestCase_bicubic():
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(2, 17))
+    renditions.append(Rendition(4, 17))
 
     # Intialize decoder
     decoder = Decoder("h264", {})
@@ -184,7 +180,7 @@ def getTestCase_bicubic():
     return testCase
 
 
-def getTestCase_superresolution():
+def getTestCase_superresolution(driver):
     # Initialize encoders
     encoders = []
 
@@ -192,11 +188,11 @@ def getTestCase_superresolution():
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(2, 17))
+    renditions.append(Rendition(4, 17))
 
     decoder = Decoder("h264_cuvid", {})
 
-    testCase = TestCase(decoder, encoders, renditions, "waifu2x_caffe")
+    testCase = TestCase(decoder, encoders, renditions, driver)
     return testCase
 
 
@@ -239,8 +235,7 @@ def evalTestData(videos, testCase):
             )
 
         jsonPrettyString = prettifyJsonString(results)
-        print(jsonPrettyString)
-        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput)
+        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, testCase.scaler)
         logging.info("Results written in {0}".format(outputFilePath))
 
 
@@ -338,7 +333,7 @@ def getOutputFilePath(rendition, video, encoder, scaler):
     outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}_{6}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
                                                                 rendition.scaling_size, rendition.crf,
                                                                 muxingFormat, encoder.encoderString, encoder.preset, scaler)
-    outputPath = "{0}/{1}".format(OUTPUT_SEGMENTS, outputFileName)
+    outputPath = "{0}/{1}/{2}".format(OUTPUT_SEGMENTS, scaler, outputFileName)
     return outputPath
 
 

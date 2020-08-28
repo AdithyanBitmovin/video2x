@@ -56,6 +56,8 @@ RUN apt-get update \
 ADD ./src/RunTests.py RunTests.py
 ADD ./input/links.txt links.txt
 ADD ./input/linksTest.txt linksTest.txt
+ADD ./input/linksNaruto.txt linksNaruto.txt
+ADD ./input/linksConan.txt linksConan.txt
 
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
