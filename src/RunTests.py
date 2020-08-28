@@ -128,15 +128,13 @@ def checkIfVideosExist(links):
 
 # Run the tests for all given encoders, passes, bitrates and presets
 def runTests(videos):
+    print(testType)
     if (testType == "bicubic"):
         logging.info("Evaluating X264 - bicubic scaling")
         testCase = getTestCase_bicubic()
     else :
         logging.info("Evaluating X264 - " + testType + " scaling")
         testCase = getTestCase_superresolution(testType)
-
-    createIODirectories([OUTPUT_SEGMENTS + "/" + testCase.scaler + "/" ])
-    createIODirectories([OUTPUT_RESULTS + "/" + testCase.scaler + "/" ])
 
     evalTestData(videos, testCase)
 
@@ -171,6 +169,7 @@ def getTestCase_bicubic():
 
     # Intialize renditions
     renditions = []
+    renditions.append(Rendition(2, 17))
     renditions.append(Rendition(4, 17))
 
     # Intialize decoder
@@ -188,6 +187,7 @@ def getTestCase_superresolution(driver):
 
     # Intialize renditions
     renditions = []
+    renditions.append(Rendition(2, 17))
     renditions.append(Rendition(4, 17))
 
     decoder = Decoder("h264_cuvid", {})
@@ -202,18 +202,20 @@ def evalTestData(videos, testCase):
         results = []
         for video in videos:
             logging.info(
-                "Running tests for: |\t " + video + " \t|\t Decoder: " + testCase.decoder.decoderString +
-                " \t|\t Encoder: " + encoder.encoderString + " \t|\t Preset: " + encoder.preset + " \t|")
+                "Running tests for: |\t " + video +
+                " \t|\t Encoder: " + encoder.encoderString + " \t|\t Preset: " + encoder.preset + " \t|"
+                + " \t|\t Scaler: " + testCase.scaler + " \t|")
 
             testCaseCommand = ""
             if testCase.scaler == "scale":
                 testCaseCommand = getFfmpegEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
                                                          testCase.scaler)
-            else:
-                testCaseCommand = getVideo2xEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
-                                                          testCase.scaler)
+                timeOfCommand = getTimeOfCommand(testCaseCommand)
 
-            timeOfCommand = getTimeOfCommand(testCaseCommand)
+            else:
+                timeOfCommand = getVideo2xEncodeCommand(video, testCase.decoder, encoder, testCase.renditions,
+                                                              testCase.scaler)
+
             processMonitorResult = executeTimeCommand(timeOfCommand)
             bitrateList, psnrList, vmafList = extractBdMetrics(encoder, testCase, video)
 
@@ -248,7 +250,7 @@ def extractBdMetrics(encoder, testCase, video):
         "{0}/{1}".format(OUTPUT_RESULTS, outputPath)
 
         sourceInputPath = getInputPath(video)
-        # bitrateOutput, psnr, vmaf = getBitrateOfVideo(sourceInputPath, outputPath)
+        bitrateOutput, psnr, vmaf = getBitrateOfVideo(sourceInputPath, outputPath)
         bitrateOutput = 0
         psnr = 0
         vmaf = 0
@@ -269,13 +271,22 @@ def extractBdMetrics(encoder, testCase, video):
 def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
     video2xpath = "./video2x/src/video2x.py"
     inputPath = getInputPath(video)
-    rendition = renditionList[0]
-    outputPath = getOutputFilePath(rendition, video, encoder, scaler)
 
-    video2xCommand = "python3.8 {0} -i {1} -o {2} -d {3} -r {4}".format(video2xpath, inputPath, outputPath, scaler,
-                                                                        rendition.scaling_size)
-    print(video2xCommand)
-    return video2xCommand
+
+    video2xCommandList = []
+
+    for rendition in renditionList:
+        createIODirectories([OUTPUT_SEGMENTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
+        createIODirectories([OUTPUT_RESULTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
+
+        outputPath = getOutputFilePath(rendition, video, encoder, scaler)
+        video2xCommand = "python3.8 {0} -i {1} -o {2} -d {3} -r {4}".format(video2xpath, inputPath, outputPath, scaler,
+                                                                            rendition.scaling_size)
+        video2xCommandList.append(getTimeOfCommand(video2xCommand))
+
+
+    video2xCommandJoint = " && ".join(video2xCommandList)
+    return video2xCommandJoint
 
 
 # Returns the command to encode with the given parameters as a string.
@@ -287,11 +298,13 @@ def getFfmpegEncodeCommand(video, decoder, encoder, renditionList, scaler):
     ffmpegPath = "ffmpeg -hide_banner -loglevel quiet -stats"
     inputPath = getInputPath(video)
 
-    decodingOption = "{0} -c:v {1}".format(getOptionsFfmpegString(decoder.decoderOptions), decoder.decoderString)
+    #decodingOption = "{0} -c:v {1}".format(getOptionsFfmpegString(decoder.decoderOptions), decoder.decoderString)
     decodingOption = ""
 
     outputRenditionsCommand = ""
     for rendition in renditionList:
+        createIODirectories([OUTPUT_SEGMENTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
+        createIODirectories([OUTPUT_RESULTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
         outputRenditionsCommand += getRenditionFfmpegSubCommand(encoder, video, rendition, scaler)
 
     ffmpegCommand = '{0}  -y {1} -i {2} {3}'.format(ffmpegPath, decodingOption, inputPath, outputRenditionsCommand)
@@ -333,7 +346,8 @@ def getOutputFilePath(rendition, video, encoder, scaler):
     outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}_{6}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
                                                                 rendition.scaling_size, rendition.crf,
                                                                 muxingFormat, encoder.encoderString, encoder.preset, scaler)
-    outputPath = "{0}/{1}/{2}".format(OUTPUT_SEGMENTS, scaler, outputFileName)
+
+    outputPath = "{0}/{1}_{2}x/{3}".format(OUTPUT_SEGMENTS, scaler, rendition.scaling_size, outputFileName)
     return outputPath
 
 
