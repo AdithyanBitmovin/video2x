@@ -81,7 +81,7 @@ def createIODirectories(directories):
 
 def downloadVideos(filename):
     links = [
-        "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/NARUTO/chunk_30s/video_00007_2frames.mkv"
+        "http://adi-innovation-superresolution.commondatastorage.googleapis.com/source/CONAN/chunk_4s_forced/video_00346.mkv"
     ]
 
     print(filename)
@@ -167,13 +167,11 @@ def getTestCase_bicubic():
     # Initialize encoders
     encoders = []
     x264codecOptionsString = r"""{
-        "crf" : "17",
         "pix_fmt" : "yuv420p",
-        "tune" : "animation", 
-        "sws_flags" : "bicubic"
+        "tune" : "animation"
     }"""
     x264codecOptions = json.loads(x264codecOptionsString)
-    encoders.append(Encoder("libx264", "slow", x264codecOptions))
+    encoders.append(Encoder("libx264", "default", x264codecOptions))
 
     # Intialize renditions
     renditions = []
@@ -189,24 +187,14 @@ def getTestCase_bicubic():
 def getTestCase_superresolution():
     # Initialize encoders
     encoders = []
-    codecOptionsString = r"""{
-        "tune" : "hq",
-        "rc-lookahead" : "40"
-    }"""
-    codecOptions = json.loads(codecOptionsString)
-    encoders.append(Encoder("h264", "default", {}))
+
+    encoders.append(Encoder("libx264", "default", {}))
 
     # Intialize renditions
     renditions = []
     renditions.append(Rendition(2, 17))
 
-    # Intialize decoder
-    h264CuvidOptionsString = r"""{
-        "vsync" : "0",
-        "hwaccel" : "cuvid"
-    }"""
-    h264CuvidOptions = json.loads(h264CuvidOptionsString)
-    decoder = Decoder("h264_cuvid", h264CuvidOptions)
+    decoder = Decoder("h264_cuvid", {})
 
     testCase = TestCase(decoder, encoders, renditions, "waifu2x_caffe")
     return testCase
@@ -245,7 +233,8 @@ def evalTestData(videos, testCase):
                     "realTimeFactor": processMonitorResult.realTimeFactor,
                     "bitrateOutput": bitrateList,
                     "psnr": psnrList,
-                    "vmaf": vmafList
+                    "vmaf": vmafList,
+                    "scaler" : testCase.scaler
                 }
             )
 
@@ -260,7 +249,7 @@ def extractBdMetrics(encoder, testCase, video):
     psnrOutputList = []
     vmafOutputList = []
     for rendition in testCase.renditions:
-        outputPath = getOutputFilePath(rendition, video, encoder)
+        outputPath = getOutputFilePath(rendition, video, encoder, testCase.scaler)
         "{0}/{1}".format(OUTPUT_RESULTS, outputPath)
 
         sourceInputPath = getInputPath(video)
@@ -286,7 +275,7 @@ def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
     video2xpath = "./video2x/src/video2x.py"
     inputPath = getInputPath(video)
     rendition = renditionList[0]
-    outputPath = getOutputFilePath(rendition, video, encoder)
+    outputPath = getOutputFilePath(rendition, video, encoder, scaler)
 
     video2xCommand = "python3.8 {0} -i {1} -o {2} -d {3} -r {4}".format(video2xpath, inputPath, outputPath, scaler,
                                                                         rendition.scaling_size)
@@ -321,11 +310,11 @@ def getInputPath(video):
 
 
 def getRenditionFfmpegSubCommand(encoder, video, rendition, scaler):
-    outputPath = getOutputFilePath(rendition, video, encoder)
+    outputPath = getOutputFilePath(rendition, video, encoder, scaler)
     # outputPath = "-f null /dev/null"
 
     encoderOptions = getOptionsFfmpegString(encoder.encoderOptions)
-    outputRenditions = ' -vf {7}=iw*{0}:ih*{1} -c:v {2} {6} -crf {4} -an {5}'.format(rendition.scaling_size,
+    outputRenditions = ' -crf {4} {6} -c:v {2} -vf {7}=iw*{0}:ih*{1},setdar=3/2 -sws_flags bicubic -an {5}'.format(rendition.scaling_size,
                                                                                      rendition.scaling_size,
                                                                                      encoder.encoderString,
                                                                                      encoder.preset,
@@ -344,11 +333,11 @@ def getOptionsFfmpegString(options):
     return ffmpegString
 
 
-def getOutputFilePath(rendition, video, encoder):
+def getOutputFilePath(rendition, video, encoder, scaler):
     muxingFormat = "mkv"
-    outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
+    outputFileName = "{0}_scale={1}_CRF={2}_{4}_{5}_{6}.{3}".format(os.path.splitext(ntpath.basename(video))[0],
                                                                 rendition.scaling_size, rendition.crf,
-                                                                muxingFormat, encoder.encoderString, encoder.preset)
+                                                                muxingFormat, encoder.encoderString, encoder.preset, scaler)
     outputPath = "{0}/{1}".format(OUTPUT_SEGMENTS, outputFileName)
     return outputPath
 
@@ -413,7 +402,7 @@ def runCommand(command):
     (out, err) = proc.communicate()
 
     print(err)
-    # print(out)
+    print(out)
 
     err = err.decode("utf-8")
     # out = out.decode("utf-8")
