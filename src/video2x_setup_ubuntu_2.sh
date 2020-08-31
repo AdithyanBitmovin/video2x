@@ -27,36 +27,9 @@ fi
 # environment variables
 export DEBIAN_FRONTEND="noninteractive"
 
-# install basic utilities and add PPAs
-apt-get update
-apt-get install -y --no-install-recommends apt-utils software-properties-common
-
-# add PPAs and sources
-add-apt-repository -y ppa:apt-fast/stable
-add-apt-repository -y ppa:graphics-drivers/ppa
-apt-get install -y --no-install-recommends apt-fast
-apt-fast update
-
-# install runtime packages
-apt-fast install -y --no-install-recommends libmagic1 nvidia-cuda-toolkit nvidia-driver-440 python3.8
-
-# install compilation packages
-apt-fast install -y --no-install-recommends git-core curl wget ca-certificates gnupg2 python3-dev python3-pip python3-setuptools python3-wheel
-
-# add Nvidia sources
-curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add -
-echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" >/etc/apt/sources.list.d/nvidia-ml.list
-apt-fast update
-
-# install python3 packages
-git clone --recurse-submodules --progress https://github.com/k4yt3x/video2x.git --depth=1 $INSTALLATION_PATH/video2x
-python3.8 -m pip install -U pip
-python3.8 -m pip install -U -r $INSTALLATION_PATH/video2x/src/requirements.txt
-mkdir -v -p $INSTALLATION_PATH/video2x/src/dependencies
-
-# install gifski
-apt-fast install -y --no-install-recommends cargo
-cargo install gifski
+## install gifski
+# apt-fast install -y --no-install-recommends cargo
+# cargo install gifski
 
 # install waifu2x-caffe
 apt-fast install -y --no-install-recommends autoconf build-essential cmake gcc-8 libatlas-base-dev libboost-atomic-dev libboost-chrono-dev libboost-date-time-dev libboost-filesystem-dev libboost-iostreams-dev libboost-python-dev libboost-system-dev libboost-thread-dev libcudnn7 libcudnn7-dev libgflags-dev libgoogle-glog-dev libhdf5-dev libleveldb-dev liblmdb-dev libopencv-dev libprotobuf-dev libsnappy-dev protobuf-compiler python-numpy texinfo yasm zlib1g-dev
