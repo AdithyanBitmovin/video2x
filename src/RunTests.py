@@ -141,8 +141,8 @@ def runTests(videos):
 
 def writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, scaler):
 
-    outputFilePath = "{0}/{1}/{2}_{3}_{4}_{1}.json".format(OUTPUT_RESULTS, scaler, dateTimeForFileOutput,
-                                                      encoder.encoderString, encoder.preset)
+    outputFilePath = "{0}/{1}_{5}x/{2}_{3}_{4}_{1}.json".format(OUTPUT_RESULTS, scaler, dateTimeForFileOutput,
+                                                      encoder.encoderString, encoder.preset, )
 
     resultsFile = open(outputFilePath, "w")
     resultsFile.write(jsonPrettyString)
@@ -237,7 +237,7 @@ def evalTestData(videos, testCase):
             )
 
         jsonPrettyString = prettifyJsonString(results)
-        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, testCase.scaler)
+        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, testCase.scaler, testCase.renditions)
         logging.info("Results written in {0}".format(outputFilePath))
 
 
