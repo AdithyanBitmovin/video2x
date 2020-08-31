@@ -51,10 +51,10 @@ RUN pwd
 
 # run installation
 RUN apt-get update
-RUN apt-get install -y git-core
 RUN git clone -b feature/EN-8066-InnovationSuperRes --recurse-submodules --progress https://github.com/AdithyanBitmovin/video2x.git /tmp/video2x/video2x
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_1.sh
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_2.sh
+RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_3.sh
 
 ADD ./src/RunTests.py RunTests.py
 ADD ./input/links.txt links.txt
