@@ -24,8 +24,6 @@ do
 
 
         concatenated_file_full_path="${output_file_directory}/concatenate_${filter}_${scale_factor}x.mkv"
-        ffmpeg -f concat -safe 0 -i ${concatenate_file_list} -c copy {concatenated_file_full_path}
-
-
+        ffmpeg -f concat -safe 0 -i ${concatenate_file_list} -c copy ${concatenated_file_full_path}
     done
 done
