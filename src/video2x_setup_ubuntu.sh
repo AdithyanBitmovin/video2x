@@ -182,14 +182,14 @@ unzip "$realsr_ncnn_vulkan_zip" -d $TEMP/realsr-ncnn-vulkan
 mv -v $TEMP/realsr-ncnn-vulkan/realsr-ncnn-vulkan-*-linux $INSTALLATION_PATH/video2x/src/dependencies/realsr-ncnn-vulkan
 
 # install anime4kcpp
-#apt-fast install -y --no-install-recommends build-essential cmake libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
-#git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $TEMP/anime4kcpp
-#mkdir -v $TEMP/anime4kcpp/build
-#cd $TEMP/anime4kcpp/CLI/build
-#cmake -DBuild_GUI=OFF ..
-#make -j$(nproc)
-#mv -v $TEMP/anime4kcpp/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
-#mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
+apt-fast install -y --no-install-recommends build-essential cmake libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
+git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $TEMP/anime4kcpp
+mkdir -v $TEMP/anime4kcpp/build
+cd $TEMP/anime4kcpp/CLI/build
+cmake -DBuild_GUI=OFF ..
+make -j$(nproc)
+mv -v $TEMP/anime4kcpp/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
+mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
 
 # rewrite config file values
 python3.8 - <<EOF

@@ -46,12 +46,14 @@ RUN ./installFfmpeg.sh
 RUN pip3 install ffmpeg_quality_metrics
 RUN pip3 install requests
 
+
+RUN pwd
+
 # run installation
 RUN apt-get update \
     && apt-get install -y git-core \
     && git clone --recurse-submodules --progress https://github.com/k4yt3x/video2x.git /tmp/video2x/video2x \
     && bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu.sh /
-
 
 ADD ./src/RunTests.py RunTests.py
 ADD ./input/links.txt links.txt
