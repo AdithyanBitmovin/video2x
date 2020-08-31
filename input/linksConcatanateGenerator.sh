@@ -8,7 +8,7 @@ do
         output_file_directory="/home/adithyan_ilangovan_bitmovin_com/EN-8066/output/output/NARUTO/segments/${filter}_${scale_factor}x"
         #sudo mkdir -p ${output_file_directory}
 
-        directory_to_store="/home/adithyanilangovan/Repos/video2x/input/"
+        directory_to_store="/home/adithyanilangovan/Repos/video2x/input"
         concatenate_file_to_store="concatenate_${filter}_${scale_factor}x.txt"
 
         concatenate_file_list=${directory_to_store}/${concatenate_file_to_store}
