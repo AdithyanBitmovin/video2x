@@ -19,8 +19,8 @@ do
             formatted_segment_number=$(printf "%05d" $segment_number)
             output_file_name="video_${formatted_segment_number}_scale=${scale_factor}_CRF=17_libx264_default_${filter}.mkv"
 
+            echo  ${concatenate_file_list}
             echo "file '${output_file_directory}/${output_file_name}'" >> ${concatenate_file_list}
-
         done
 
 
