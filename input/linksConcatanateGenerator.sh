@@ -1,24 +1,32 @@
 #!/bin/bash
 echo "Bash version ${BASH_VERSION}..."
 
-for filter in waifu2x_caffe
+for filter in waifu2x_caffe scale
 do
-  echo ${filter}
-    for scale_factor in 2
+    for scale_factor in 2 4
     do
+        output_file_directory="/home/adithyan_ilangovan_bitmovin_com/EN-8066/output/output/NARUTO/segments/${filter}_${scale_factor}x"
+        #sudo mkdir -p ${output_file_directory}
+
+        directory_to_store="/home/adithyanilangovan/Repos/video2x/input/"
+        concatenate_file_to_store="concatenate_${filter}_${scale_factor}x.txt"
+
+        concatenate_file_list=${directory_to_store}/${concatenate_file_to_store}
+        sudo rm ${concatenate_file_list}
+
         for segment_number in {0..346}
           do
             formatted_segment_number=$(printf "%05d" $segment_number)
-            output_file_directory="/home/adithyan_ilangovan_bitmovin_com/EN-8066/output/output/NARUTO/segments/${filter}_${scale_factor}x"
             output_file_name="video_${formatted_segment_number}_scale=${scale_factor}_CRF=17_libx264_default_${filter}.mkv"
 
-            sudo mkdir -p ${output_file_directory}
-
-            directory_to_store="/home/adithyanilangovan/Repos/video${scale_factor}x/input/"
-            concatante_file_to_store="concatante_${filter}_${scale_factor}.txt"
-
-            echo "file '${output_file_directory}/${output_file_name}'" >> ${directory_to_store}${concatante_file_to_store}
+            echo "file '${output_file_directory}/${output_file_name}'" >> ${concatenate_file_list}
 
         done
+
+
+        concatenated_file_full_path="${output_file_directory}/concatenate_${filter}_${scale_factor}x.mkv"
+        ffmpeg -f concat -safe 0 -i ${concatenate_file_list} -c copy {concatenated_file_full_path}
+
+
     done
 done
