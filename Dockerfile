@@ -62,7 +62,7 @@ ADD https://cmake.org/files/v3.14/cmake-3.14.2-Linux-x86_64.sh /cmake-3.14.2-Lin
 RUN mkdir /opt/cmake
 RUN sh /cmake-3.14.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-RUN echocmake --version
+RUN cmake --version
 
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_3.sh
 
@@ -78,5 +78,5 @@ ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 ENV INPUT=None
 ENV TEST_TYPE=software
 
-CMD ["RunTests.py"]
-ENTRYPOINT ["python3.8"]
+#CMD ["RunTests.py"]
+#ENTRYPOINT ["python3.8"]
