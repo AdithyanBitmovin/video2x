@@ -28,12 +28,12 @@ fi
 export DEBIAN_FRONTEND="noninteractive"
 
 # install anime4kcpp
-apt-fast install -y --no-install-recommends build-essential cmake libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
+apt-fast install -y --no-install-recommends build-essential libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
 git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $TEMP/anime4kcpp
-mkdir -v $TEMP/anime4kcpp/CLI/build
-cd $TEMP/anime4kcpp/CLI/build
+mkdir -v $TEMP/anime4kcpp//build
+cd $TEMP/anime4kcpp/build
 cmake -DBuild_GUI=OFF ..
-make -j$(nproc)
+make
 mv -v $TEMP/anime4kcpp/CLI/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
 mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
 

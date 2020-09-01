@@ -55,6 +55,15 @@ RUN apt-get update
 RUN git clone -b feature/EN-8066-InnovationSuperRes --recurse-submodules --progress https://github.com/AdithyanBitmovin/video2x.git /tmp/video2x/video2x
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_1.sh
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_2.sh
+
+
+#install latest cmake
+ADD https://cmake.org/files/v3.14/cmake-3.14.2-Linux-x86_64.sh /cmake-3.14.2-Linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh /cmake-3.14.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN echocmake --version
+
 RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_3.sh
 
 ADD ./src/RunTests.py RunTests.py
