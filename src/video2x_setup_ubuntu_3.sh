@@ -34,7 +34,7 @@ mkdir -v $TEMP/anime4kcpp/CLI/build
 cd $TEMP/anime4kcpp/CLI/build
 cmake -DBuild_GUI=OFF ..
 make -j$(nproc)
-mv -v $TEMP/anime4kcpp/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
+mv -v $TEMP/anime4kcpp/CLI/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
 mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
 
 # rewrite config file values

@@ -48,6 +48,7 @@ RUN pip3 install requests
 
 
 RUN pwd
+RUN pwd
 
 # run installation
 RUN apt-get update
