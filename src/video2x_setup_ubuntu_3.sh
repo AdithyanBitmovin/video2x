@@ -27,15 +27,23 @@ fi
 # environment variables
 export DEBIAN_FRONTEND="noninteractive"
 
+#install cmake latest version
+wget https://cmake.org/files/v3.14/cmake-3.14.2-Linux-x86_64.sh
+mkdir /opt/cmake
+sh ./cmake-3.14.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+cmake --version
+
+
 # install anime4kcpp
 apt-fast install -y --no-install-recommends build-essential libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
-git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $TEMP/anime4kcpp
-mkdir -v $TEMP/anime4kcpp/build
-cd $TEMP/anime4kcpp/build
+
+git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
+mkdir -v $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/build
+cd $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/build
 cmake -DBuild_GUI=OFF ..
 make
-mv -v $TEMP/anime4kcpp/CLI/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
-mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
+#mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
 
 # rewrite config file values
 python3.8 - <<EOF

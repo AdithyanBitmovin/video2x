@@ -40,31 +40,25 @@ RUN ./installX265.sh
 ADD ./src/installVMAF.sh installVMAF.sh
 RUN ./installVMAF.sh
 
+RUN pwd
+
 ADD ./src/installFfmpeg.sh installFfmpeg.sh
 RUN ./installFfmpeg.sh
 
 RUN pip3 install ffmpeg_quality_metrics
 RUN pip3 install requests
 
+ADD ./src/video2x_setup_ubuntu_1.sh  video2x_setup_ubuntu_1.sh
+RUN ./video2x_setup_ubuntu_1.sh /
 
-RUN pwd
-RUN pwd
+ADD ./src/video2x_setup_ubuntu_2.sh  video2x_setup_ubuntu_2.sh
+RUN ./video2x_setup_ubuntu_2.sh /
 
-# run installation
-RUN apt-get update
-RUN git clone -b feature/EN-8066-InnovationSuperRes --recurse-submodules --progress https://github.com/AdithyanBitmovin/video2x.git /tmp/video2x/video2x
-RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_1.sh
-RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_2.sh
+ADD ./src/install_opencv4.sh  install_opencv4.sh
+RUN ./install_opencv4.sh
 
-
-#install latest cmake
-ADD https://cmake.org/files/v3.14/cmake-3.14.2-Linux-x86_64.sh /cmake-3.14.2-Linux-x86_64.sh
-RUN mkdir /opt/cmake
-RUN sh /cmake-3.14.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
-RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-RUN cmake --version
-
-RUN bash -e /tmp/video2x/video2x/src/video2x_setup_ubuntu_3.sh
+ADD ./src/video2x_setup_ubuntu_3.sh  video2x_setup_ubuntu_3.sh
+RUN ./video2x_setup_ubuntu_3.sh /
 
 ADD ./src/RunTests.py RunTests.py
 ADD ./input/links.txt links.txt
