@@ -141,8 +141,8 @@ def runTests(videos):
 
 def writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, scaler):
 
-    outputFilePath = "{0}/{1}_{5}x/{2}_{3}_{4}_{1}.json".format(OUTPUT_RESULTS, scaler, dateTimeForFileOutput,
-                                                      encoder.encoderString, encoder.preset, )
+    outputFilePath = "{0}/{1}/{2}_{3}_{4}_{1}.json".format(OUTPUT_RESULTS, scaler, dateTimeForFileOutput,
+                                                      encoder.encoderString, encoder.preset)
 
     resultsFile = open(outputFilePath, "w")
     resultsFile.write(jsonPrettyString)
@@ -237,7 +237,7 @@ def evalTestData(videos, testCase):
             )
 
         jsonPrettyString = prettifyJsonString(results)
-        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, testCase.scaler, testCase.renditions)
+        outputFilePath = writeOutputToFile(jsonPrettyString, encoder, dateTimeForFileOutput, testCase.scaler)
         logging.info("Results written in {0}".format(outputFilePath))
 
 
@@ -275,12 +275,13 @@ def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
 
     video2xCommandList = []
 
+    createIODirectories([OUTPUT_RESULTS + "/" + scaler])
     for rendition in renditionList:
         createIODirectories([OUTPUT_SEGMENTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
         createIODirectories([OUTPUT_RESULTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
 
         outputPath = getOutputFilePath(rendition, video, encoder, scaler)
-        video2xCommand = "python3.8 {0} -i {1} -o {2} -d {3} -r {4}".format(video2xpath, inputPath, outputPath, scaler,
+        video2xCommand = "python3.8 {0} -i {1} -o {2} -r {4} -d {3} -- --GPUMode -t 10".format(video2xpath, inputPath, outputPath, scaler,
                                                                             rendition.scaling_size)
         video2xCommandList.append(getTimeOfCommand(video2xCommand))
 
