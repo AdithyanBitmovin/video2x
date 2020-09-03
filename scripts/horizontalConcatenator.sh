@@ -11,7 +11,7 @@ do
       reference_output_file_directory="$HOME/EN-8066/concatanate"
       reference_concatenated_file_full_path="${reference_output_file_directory}/concatenate_${filter_reference}_${scale_factor}x.mkv"
 
-      for filter_optimized in waifu2x_caffe anime4kcpp
+      for filter_optimized in anime4kcpp
       do
           optimized_output_file_directory="$HOME/EN-8066/concatanate"
           optimized_concatenated_file_full_path="${optimized_output_file_directory}/concatenate_${filter_optimized}_${scale_factor}x.mkv"
@@ -43,12 +43,12 @@ do
 		font_size=50
 	  fi
 
-          draw_text_filter_reference="[v00]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_reference}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=${font_size}[v0]"
-          draw_text_filter_optimized="[v11]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_optimized}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=${font_size}[v1]"
+          draw_text_filter_reference="[v00]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_reference}:x=(w-text_w)/2:y=(h-text_h)*9/10:fontcolor=white:fontsize=${font_size}[v0]"
+          draw_text_filter_optimized="[v11]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_optimized}:x=(w-text_w)/2:y=(h-text_h)*9/10:fontcolor=white:fontsize=${font_size}[v1]"
 
-          ffmpeg_command="ffmpeg -y -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path} -filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_optimized};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast -t 2 ${comparison_file_full_path}"
+          ffmpeg_command="ffmpeg -y -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path} -filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_optimized};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast ${comparison_file_full_path}"
 	  eval $ffmpeg_command
-          sudo gsutil cp ${comparison_file_full_path} gs://adi-innovation-superresolution/tmp/
+          sudo gsutil cp ${comparison_file_full_path} gs://adi-innovation-superresolution/output/NARUTO/comparison/
 
       done
     done
