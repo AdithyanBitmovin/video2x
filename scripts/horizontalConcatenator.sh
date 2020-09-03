@@ -22,11 +22,11 @@ do
 
           ffprobe_optimized="ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${comparison_file_full_path} -select_streams v -show_entries 'format=bit_rate'"
           echo ${ffprobe_optimized}
-          optimized_file_bitrate=$(ffprobe_optimized)
+          optimized_file_bitrate=$(eval ffprobe_optimized)
 
           ffprobe_reference="ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${reference_concatenated_file_full_path} -select_streams v -show_entries 'format=bit_rate'"
           echo ${ffprobe_reference}
-          ref_file_bitrate=$(ffprobe_reference)
+          ref_file_bitrate=$(eval ffprobe_reference)
 
 
           filter_text_optimized="|Upsample=${filter_optimized}|Encode=X264_CRF_17|Bitrate=${optimized_file_bitrate}|"
