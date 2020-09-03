@@ -21,14 +21,19 @@ do
 
 
           ffprobe_optimized="ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${comparison_file_full_path} -select_streams v -show_entries 'format=bit_rate'"
-          optimized_file_bitrate=$(ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${reference_concatenated_file_full_path} -select_streams v -show_entries 'format=bit_rate')
+          optimized_file_bitrate=$(ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${optimized_concatenated_file_full_path} -select_streams v -show_entries 'format=bit_rate')
+	  optimized_file_bitrate_kbps=$(( optimized_file_bitrate / 1000  ))
 
           ffprobe_reference="ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${reference_concatenated_file_full_path} -select_streams v -show_entries 'format=bit_rate'"
           reference_file_bitrate=$(ffprobe -hide_banner -loglevel 0 -of default=nokey=1:noprint_wrappers=1 -i ${reference_concatenated_file_full_path} -select_streams v -show_entries 'format=bit_rate')
+	  reference_file_bitrate_kbps=$(( reference_file_bitrate / 1000  ))
 
 
-          filter_text_optimized="|Upsample=${filter_optimized}|Encode=X264_CRF_17|Bitrate=${optimized_file_bitrate}|"
-          filter_text_reference="|Upsample=bicubic|Encode=X264_CRF_17|Bitrate=${reference_file_bitrate}|"
+          filter_text_optimized="|${scale_factor}x|${filter_optimized}|x264_crf_17|${optimized_file_bitrate_kbps}kbps|"
+          filter_text_reference="|${scale_factor}x|bicubic|x264_crf_17|${reference_file_bitrate_kbps}kbps|"
+
+	  echo ${filter_text_optimized}
+	  echo ${filter_text_reference}
 
 	  font_size=0
 	  if [ "${scale_factor}" -eq "2" ];
@@ -41,7 +46,7 @@ do
           draw_text_filter_reference="[v00]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_reference}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=${font_size}[v0]"
           draw_text_filter_optimized="[v11]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_optimized}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=${font_size}[v1]"
 
-          ffmpeg_command="ffmpeg -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path} -filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_optimized};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast -t 2 ${comparison_file_full_path}"
+          ffmpeg_command="ffmpeg -y -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path} -filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_optimized};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast -t 2 ${comparison_file_full_path}"
 	  eval $ffmpeg_command
           sudo gsutil cp ${comparison_file_full_path} gs://adi-innovation-superresolution/tmp/
 
