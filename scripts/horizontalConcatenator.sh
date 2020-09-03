@@ -8,12 +8,12 @@ do
       comparison_directory="$HOME/EN-8066/comparison"
       mkdir -p ${comparison_directory}
 
-      reference_output_file_directory="$HOME/EN-8066/concatanate/${filter_reference}_${scale_factor}x"
+      reference_output_file_directory="$HOME/EN-8066/concatanate"
       reference_concatenated_file_full_path="${reference_output_file_directory}/concatenate_${filter_reference}_${scale_factor}x.mkv"
 
       for filter_optimized in waifu2x_caffe
       do
-          optimized_output_file_directory="$HOME/EN-8066/concatanate/${filter_optimized}_${scale_factor}x"
+          optimized_output_file_directory="$HOME/EN-8066/concatanate"
           optimized_concatenated_file_full_path="${optimized_output_file_directory}/concatenate_${filter_optimized}_${scale_factor}x.mkv"
 
           comparison_file_name="comparison_${filter_optimized}vs${filter_reference}_${scale_factor}x.mkv"
@@ -31,7 +31,7 @@ do
           draw_text_filter_reference="[v00]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_reference}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=50[v0]"
           draw_text_filter_optimized="[v11]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_optimized}:x=(w-text_w)/2:y=(h-text_h)*5/6:fontcolor=white:fontsize=50[v1]"
 
-          ffmpeg_command="ffmpeg -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path}-filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_reference};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast ${comparison_file_full_path}"
+          ffmpeg_command="ffmpeg -i ${reference_concatenated_file_full_path} -i ${optimized_concatenated_file_full_path} -filter_complex \"[0:v]crop=1/2*in_w:in_h[v00];${draw_text_filter_reference};[1:v]crop=1/2*in_w:in_h[v11];${draw_text_filter_reference};[v0][v1]hstack\" -c:v libx264 -crf 17 -preset veryfast ${comparison_file_full_path}"
           echo ${ffmpeg_command}
 
       done
