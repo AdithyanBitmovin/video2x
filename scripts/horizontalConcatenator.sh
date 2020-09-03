@@ -32,16 +32,16 @@ do
           filter_text_optimized="|${scale_factor}x|${filter_optimized}|x264_crf_17|${optimized_file_bitrate_kbps}kbps|"
           filter_text_reference="|${scale_factor}x|bicubic|x264_crf_17|${reference_file_bitrate_kbps}kbps|"
 
-	  echo ${filter_text_optimized}
-	  echo ${filter_text_reference}
+          echo ${filter_text_optimized}
+          echo ${filter_text_reference}
 
-	  font_size=0
-	  if [ "${scale_factor}" -eq "2" ];
-	  then
-		font_size=25
-	  else
-		font_size=50
-	  fi
+          font_size=0
+          if [ "${scale_factor}" -eq "2" ];
+          then
+          font_size=25
+          else
+          font_size=50
+          fi
 
           draw_text_filter_reference="[v00]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_reference}:x=(w-text_w)/2:y=(h-text_h)*9/10:fontcolor=white:fontsize=${font_size}[v0]"
           draw_text_filter_optimized="[v11]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text=${filter_text_optimized}:x=(w-text_w)/2:y=(h-text_h)*9/10:fontcolor=white:fontsize=${font_size}[v1]"
