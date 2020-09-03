@@ -169,8 +169,15 @@ def getTestCase_bicubic():
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(2, 17))
-    renditions.append(Rendition(4, 17))
+
+    renditions.append(Rendition(2, 20))
+    renditions.append(Rendition(4, 20))
+
+    renditions.append(Rendition(2, 23))
+    renditions.append(Rendition(4, 23))
+
+    renditions.append(Rendition(2, 26))
+    renditions.append(Rendition(4, 26))
 
     # Intialize decoder
     decoder = Decoder("h264", {})
