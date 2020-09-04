@@ -9,14 +9,14 @@ do
       mkdir -p ${comparison_directory}
 
       reference_output_file_directory="$HOME/EN-8066/concatanate"
-      reference_concatenated_file_full_path="${reference_output_file_directory}/concatenate_${filter_reference}_${scale_factor}x.mkv"
+      reference_concatenated_file_full_path="${reference_output_file_directory}/concatenate_${filter_reference}_${scale_factor}x_crf20.mkv"
 
       for filter_optimized in anime4kcpp
       do
           optimized_output_file_directory="$HOME/EN-8066/concatanate"
           optimized_concatenated_file_full_path="${optimized_output_file_directory}/concatenate_${filter_optimized}_${scale_factor}x.mkv"
 
-          comparison_file_name="comparison_${filter_optimized}_vs_${filter_reference}_${scale_factor}x.mkv"
+          comparison_file_name="comparison_${filter_optimized}_vs_${filter_reference}_${scale_factor}x_crf20.mkv"
           comparison_file_full_path="${comparison_directory}/${comparison_file_name}"
 
 
@@ -30,7 +30,7 @@ do
 
 
           filter_text_optimized="|${scale_factor}x|${filter_optimized}|x264_crf_17|${optimized_file_bitrate_kbps}kbps|"
-          filter_text_reference="|${scale_factor}x|bicubic|x264_crf_17|${reference_file_bitrate_kbps}kbps|"
+          filter_text_reference="|${scale_factor}x|bicubic|x264_crf_20|${reference_file_bitrate_kbps}kbps|"
 
           echo ${filter_text_optimized}
           echo ${filter_text_reference}
