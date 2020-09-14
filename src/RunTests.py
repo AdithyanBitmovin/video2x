@@ -179,6 +179,9 @@ def getTestCase_bicubic():
     renditions.append(Rendition(2, 26))
     renditions.append(Rendition(4, 26))
 
+    renditions.append(Rendition(2, 29))
+    renditions.append(Rendition(4, 29))
+
     # Intialize decoder
     decoder = Decoder("h264", {})
 
@@ -194,8 +197,18 @@ def getTestCase_superresolution(driver):
 
     # Intialize renditions
     renditions = []
-    renditions.append(Rendition(2, 17))
-    renditions.append(Rendition(4, 17))
+    renditions.append(Rendition(2, 20))
+    renditions.append(Rendition(4, 20))
+
+    renditions.append(Rendition(2, 23))
+    renditions.append(Rendition(4, 23))
+
+    renditions.append(Rendition(2, 26))
+    renditions.append(Rendition(4, 26))
+
+    renditions.append(Rendition(2, 29))
+    renditions.append(Rendition(4, 29))
+
 
     decoder = Decoder("h264_cuvid", {})
 
@@ -256,11 +269,7 @@ def extractBdMetrics(encoder, testCase, video):
         outputPath = getOutputFilePath(rendition, video, encoder, testCase.scaler)
         "{0}/{1}".format(OUTPUT_RESULTS, outputPath)
 
-        sourceInputPath = getInputPath(video)
-        bitrateOutput, psnr, vmaf = getBitrateOfVideo(sourceInputPath, outputPath)
-        bitrateOutput = 0
-        psnr = 0
-        vmaf = 0
+        bitrateOutput, psnr, vmaf = getBitrateOfVideo(getInputPath(video), outputPath)
         bitrateOutputList.append(bitrateOutput)
         psnrOutputList.append(psnr)
         vmafOutputList.append(vmaf)
@@ -288,8 +297,13 @@ def getVideo2xEncodeCommand(video, decoder, encoder, renditionList, scaler):
         createIODirectories([OUTPUT_RESULTS + "/" + scaler + "_" + str(rendition.scaling_size) + "x/" ])
 
         outputPath = getOutputFilePath(rendition, video, encoder, scaler)
-        video2xCommand = "python3.8 {0} -i {1} -o {2} -r {4} -d {3} -- --GPUMode -t 10".format(video2xpath, inputPath, outputPath, scaler,
-                                                                            rendition.scaling_size)
+
+        extraOptions = ""
+        if scaler == "waifu2x_caffe":
+            extraOptions = "-- --noise_level 0"
+
+        video2xCommand = "python3.8 {0} -i {1} -o {2} -r {4} -d {3} {5}".format(video2xpath, inputPath, outputPath, scaler,
+                                                                            rendition.scaling_size, extraOptions)
         video2xCommandList.append(getTimeOfCommand(video2xCommand))
 
 
@@ -396,14 +410,24 @@ def getRealTimeFactor(realTimeFactorString):
 
 
 # Get the bitrate of a video in Mbit/s and the psnr ( quality metric )
-def getBitrateOfVideo(reference, distorted):
-    # ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
-    # #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0}".format(reference, distorted)
-    # err, out = runCommand(ffmpegQualityMetricCommand)
-    # resp = json.loads(out)
-    #
-    # psnrAverage = (resp["global"]["psnr"]["average"])
-    # vmafAverage = (resp["global"]["vmaf"]["average"])
+def getBitrateOfVideo(sourceInputPath, distorted):
+
+    originalScaledSourceInputPath = ""
+    if "2x" in distorted:
+        originalScaledSourceInputPath = sourceInputPath[:-4] + "_2x" + sourceInputPath[-4:]
+    else:
+        originalScaledSourceInputPath = sourceInputPath[:-4] + "_4x" + sourceInputPath[-4:]
+
+
+    reference = originalScaledSourceInputPath
+    ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
+
+    #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0}".format(reference, distorted)
+    err, out = runCommand(ffmpegQualityMetricCommand)
+    resp = json.loads(out)
+
+    psnrAverage = (resp["global"]["psnr"]["average"])
+    vmafAverage = (resp["global"]["vmaf"]["average"])
 
     ffprobeCommand = "ffprobe -hide_banner -loglevel quiet  -show_entries format=duration,bit_rate -of json {0}".format(
         distorted)
@@ -411,7 +435,7 @@ def getBitrateOfVideo(reference, distorted):
     resp = json.loads(out)
     bitrateInBps = resp["format"]["bit_rate"]
     bitrateInMbps = int(bitrateInBps) / 1000000.0
-    return bitrateInMbps, 0, 0
+    return bitrateInMbps, psnrAverage, vmafAverage
 
 
 def runCommand(command):

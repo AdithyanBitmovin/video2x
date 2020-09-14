@@ -40,6 +40,9 @@ RUN ./installX265.sh
 ADD ./src/installVMAF.sh installVMAF.sh
 RUN ./installVMAF.sh
 
+ADD ./src/installFfmpeg.sh installFfmpeg.sh
+RUN ./installFfmpeg.sh
+
 RUN pip3 install ffmpeg_quality_metrics
 RUN pip3 install requests
 
@@ -66,6 +69,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 
 ENV INPUT=None
 ENV TEST_TYPE=software
+RUN sudo ldconfig
 
 CMD ["RunTests.py"]
 ENTRYPOINT ["python3.8"]
