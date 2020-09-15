@@ -427,8 +427,11 @@ def getBitrateOfVideo(sourceInputPath, distorted):
     err, out = runCommand(ffmpegQualityMetricCommand)
     resp = json.loads(out)
 
-    psnrAverage = (resp["global"]["psnr"]["average"])
-    vmafAverage = (resp["global"]["vmaf"]["average"])
+    #psnrAverage = (resp["global"]["psnr"]["average"])
+    #vmafAverage = (resp["global"]["vmaf"]["average"])
+
+    psnrAverage = (resp["psnr"]["average"])
+    vmafAverage = 0
 
     ffprobeCommand = "ffprobe -hide_banner -loglevel quiet  -show_entries format=duration,bit_rate -of json {0}".format(
         distorted)
