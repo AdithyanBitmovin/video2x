@@ -40,8 +40,8 @@ RUN ./installX265.sh
 ADD ./src/installVMAF.sh installVMAF.sh
 RUN ./installVMAF.sh
 
-ADD ./src/installFfmpeg.sh installFfmpeg.sh
-RUN ./installFfmpeg.sh
+# ADD ./src/installFfmpeg.sh installFfmpeg.sh
+# RUN ./installFfmpeg.sh
 
 RUN pip3 install ffmpeg_quality_metrics
 RUN pip3 install requests
@@ -59,7 +59,6 @@ ADD ./src/video2x_setup_ubuntu_3.sh  video2x_setup_ubuntu_3.sh
 RUN ./video2x_setup_ubuntu_3.sh /
 
 ADD ./src/RunTests.py RunTests.py
-ADD ./input/links.txt links.txt
 ADD ./input/linksTest.txt linksTest.txt
 ADD ./input/linksNaruto.txt linksNaruto.txt
 ADD ./input/linksConan.txt linksConan.txt
@@ -69,7 +68,6 @@ ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 
 ENV INPUT=None
 ENV TEST_TYPE=software
-RUN sudo ldconfig
 
 CMD ["RunTests.py"]
 ENTRYPOINT ["python3.8"]

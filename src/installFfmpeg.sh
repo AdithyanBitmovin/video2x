@@ -3,7 +3,7 @@
 # ffmpeg
 git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 cd ffmpeg
-./configure --enable-gpl --enable-nonfree --enable-libx265 --enable-libx264 --enable-libvmaf --disable-debug --disable-ffplay --enable-pic --enable-shared
+./configure --enable-gpl --enable-nonfree --enable-libx265 --enable-libx264 --enable-libvmaf --disable-debug --disable-ffplay
 make -j${CPUS}
-sudo make -j${CPUS} install
-sudo ldconfig
+make -j${CPUS} install
+ldconfig

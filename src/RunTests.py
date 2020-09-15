@@ -420,7 +420,8 @@ def getBitrateOfVideo(sourceInputPath, distorted):
 
 
     reference = originalScaledSourceInputPath
-    ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
+    ffmpegQualityMetricCommand = "ffmpeg_quality_metrics {1} {0}".format(reference, distorted)
+    #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0} --enable-vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl".format(reference, distorted)
 
     #ffmpegQualityMetricCommand = "ffmpeg_quality_metrics -s lanczos {1} {0}".format(reference, distorted)
     err, out = runCommand(ffmpegQualityMetricCommand)
