@@ -27,36 +27,9 @@ fi
 # environment variables
 export DEBIAN_FRONTEND="noninteractive"
 
-# install basic utilities and add PPAs
-apt-get update
-apt-get install -y --no-install-recommends apt-utils software-properties-common
-
-# add PPAs and sources
-add-apt-repository -y ppa:apt-fast/stable
-add-apt-repository -y ppa:graphics-drivers/ppa
-apt-get install -y --no-install-recommends apt-fast
-apt-fast update
-
-# install runtime packages
-apt-fast install -y --no-install-recommends ffmpeg libmagic1 nvidia-cuda-toolkit nvidia-driver-440 python3.8
-
-# install compilation packages
-apt-fast install -y --no-install-recommends git-core curl wget ca-certificates gnupg2 python3-dev python3-pip python3-setuptools python3-wheel
-
-# add Nvidia sources
-curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add -
-echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" >/etc/apt/sources.list.d/nvidia-ml.list
-apt-fast update
-
-# install python3 packages
-git clone --recurse-submodules --progress https://github.com/k4yt3x/video2x.git --depth=1 $INSTALLATION_PATH/video2x
-python3.8 -m pip install -U pip
-python3.8 -m pip install -U -r $INSTALLATION_PATH/video2x/src/requirements.txt
-mkdir -v -p $INSTALLATION_PATH/video2x/src/dependencies
-
-# install gifski
-apt-fast install -y --no-install-recommends cargo
-cargo install gifski
+## install gifski
+# apt-fast install -y --no-install-recommends cargo
+# cargo install gifski
 
 # install waifu2x-caffe
 apt-fast install -y --no-install-recommends autoconf build-essential cmake gcc-8 libatlas-base-dev libboost-atomic-dev libboost-chrono-dev libboost-date-time-dev libboost-filesystem-dev libboost-iostreams-dev libboost-python-dev libboost-system-dev libboost-thread-dev libcudnn7 libcudnn7-dev libgflags-dev libgoogle-glog-dev libhdf5-dev libleveldb-dev liblmdb-dev libopencv-dev libprotobuf-dev libsnappy-dev protobuf-compiler python-numpy texinfo yasm zlib1g-dev
@@ -180,58 +153,3 @@ echo "Downloading $download_link to $realsr_ncnn_vulkan_zip"
 wget "$download_link" -O "$realsr_ncnn_vulkan_zip"
 unzip "$realsr_ncnn_vulkan_zip" -d $TEMP/realsr-ncnn-vulkan
 mv -v $TEMP/realsr-ncnn-vulkan/realsr-ncnn-vulkan-*-linux $INSTALLATION_PATH/video2x/src/dependencies/realsr-ncnn-vulkan
-
-# install anime4kcpp
-#apt-fast install -y --no-install-recommends build-essential cmake libopencv-dev beignet-opencl-icd mesa-opencl-icd ocl-icd-opencl-dev opencl-headers
-#git clone --recurse-submodules --depth=1 --progress https://github.com/TianZerL/Anime4KCPP.git $TEMP/anime4kcpp
-#mkdir -v $TEMP/anime4kcpp/build
-#cd $TEMP/anime4kcpp/CLI/build
-#cmake -DBuild_GUI=OFF ..
-#make -j$(nproc)
-#mv -v $TEMP/anime4kcpp/build $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp
-#mv -v $TEMP/anime4kcpp/models_rgb $INSTALLATION_PATH/video2x/src/dependencies/anime4kcpp/models_rgb
-
-# rewrite config file values
-python3.8 - <<EOF
-import yaml
-import os
-
-
-INSTALLATION_PATH = os.environ['INSTALLATION_PATH']
-
-with open('{}/video2x/src/video2x.yaml'.format(INSTALLATION_PATH), 'r') as template:
-    template_dict = yaml.load(template, Loader=yaml.FullLoader)
-    template.close()
-
-template_dict['ffmpeg']['ffmpeg_path'] = '/usr/bin'
-template_dict['gifski']['gifski_path'] = '/root/.cargo/bin/gifski'
-template_dict['waifu2x_caffe']['path'] = '{}/video2x/src/dependencies/waifu2x-caffe/waifu2x-caffe'.format(INSTALLATION_PATH)
-template_dict['waifu2x_converter_cpp']['path'] = '{}/video2x/src/dependencies/waifu2x-converter-cpp/waifu2x-converter-cpp'.format(INSTALLATION_PATH)
-template_dict['waifu2x_ncnn_vulkan']['path'] = '{}/video2x/src/dependencies/waifu2x-ncnn-vulkan/waifu2x-ncnn-vulkan'.format(INSTALLATION_PATH)
-template_dict['srmd_ncnn_vulkan']['path'] = '{}/video2x/src/dependencies/srmd-ncnn-vulkan/srmd-ncnn-vulkan'.format(INSTALLATION_PATH)
-template_dict['realsr_ncnn_vulkan']['path'] = '{}/video2x/src/dependencies/realsr-ncnn-vulkan/realsr-ncnn-vulkan'.format(INSTALLATION_PATH)
-template_dict['anime4kcpp']['path'] = '{}/video2x/src/dependencies/anime4kcpp/anime4kcpp'.format(INSTALLATION_PATH)
-
-# write configuration into file
-with open('{}/video2x/src/video2x.yaml'.format(INSTALLATION_PATH), 'w') as config:
-    yaml.dump(template_dict, config)
-EOF
-
-# clean up temp directory
-# purge default utilities
-# apt-get purge -y git-core curl wget ca-certificates gnupg2 python3-dev python3-pip python3-setuptools
-
-# purge waifu2x-caffe build dependencies
-# apt-get purge -y autoconf build-essential cmake gcc-8 libatlas-base-dev libboost-atomic-dev libboost-chrono-dev libboost-date-time-dev libboost-filesystem-dev libboost-iostreams-dev libboost-python-dev libboost-system-dev libboost-thread-dev libcudnn7 libcudnn7-dev libgflags-dev libgoogle-glog-dev libhdf5-dev libleveldb-dev liblmdb-dev libopencv-dev libprotobuf-dev libsnappy-dev protobuf-compiler python-numpy texinfo yasm zlib1g-dev
-
-# purge waifu2x-converter-cpp build dependencies
-# apt-get purge -y libopencv-dev ocl-icd-opencl-dev
-
-# purge waifu2x/srmd/realsr-ncnn-vulkan build dependencies
-# apt-get purge -y unzip jq
-
-# run autoremove and purge all unused packages
-# apt-get autoremove --purge -y
-
-# remove temp directory
-rm -vrf $TEMP
